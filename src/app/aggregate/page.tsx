@@ -7,11 +7,12 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
+import {
+  fetchVideoDetail,
+} from '@/lib/fetchVideoDetail.client';
 import { SearchResult } from '@/lib/types';
 
 import PageLayout from '@/components/PageLayout';
-
-import { type VideoDetail, fetchVideoDetail } from '@/lib/fetchVideoDetail';
 
 function AggregatePageClient() {
   const searchParams = useSearchParams();
@@ -164,8 +165,8 @@ function AggregatePageClient() {
       const detailData = await fetchVideoDetail({
         source: selectedSource.source,
         id: selectedSource.id,
-        fallbackTitle: selectedSource.title,
-        fallbackYear: selectedSource.year,
+        fallbackTitle: aggregatedInfo.title,
+        fallbackYear: aggregatedInfo.year,
       });
 
       // 2. 检查是否成功获取剧集和URL

@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
 import { spawn } from 'child_process';
-import path from 'path';
 import fs from 'fs/promises';
+import { NextResponse } from 'next/server';
 import os from 'os';
+import path from 'path';
 
 // Helper function to sanitize filename
 function sanitizeFilename(name: string): string {
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
         skippedCount++;
         continue;
       } catch (err) {
-        if (err.code !== 'ENOENT') {
+        if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
           console.error(`访问文件 ${outputPath} 时出错:`, err);
           failedCount++;
           continue;
@@ -131,7 +131,11 @@ export async function POST(request: Request) {
       } catch (error) {
         // 下载失败
         failedCount++;
-        console.error(`下载失败: ${episodeFileName}.mp4. 原因:`, error.message);
+        if (error instanceof Error) {
+          console.error(`下载失败: ${episodeFileName}.mp4. 原因:`, error.message);
+        } else {
+          console.error(`下载失败: ${episodeFileName}.mp4. 原因: 未知错误`);
+        }
       }
     }
 
