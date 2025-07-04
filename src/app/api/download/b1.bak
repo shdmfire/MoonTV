@@ -1,0 +1,93 @@
+import { NextResponse } from 'next/server';
+import { spawn } from 'child_process';
+import path from 'path';
+import fs from 'fs/promises';
+
+// Helper function to sanitize filename
+function sanitizeFilename(name: string): string {
+  // Replace invalid characters with an underscore
+  return name.replace(/[<>:"/\\|?*]/g, '_').trim();
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { episodes, title, downloadPath } = body;
+
+    // 1. 输入验证
+    if (!title) {
+      return NextResponse.json({ error: '缺少标题参数' }, { status: 400 });
+    }
+    if (!episodes || !Array.isArray(episodes) || episodes.length === 0) {
+      return NextResponse.json({ error: '缺少有效的剧集链接数组' }, { status: 400 });
+    }
+
+    // 2. 确定下载目录并创建以剧集标题命名的子文件夹
+    const defaultDir = path.resolve(process.cwd(), 'downloads');
+    const baseDownloadDir = downloadPath ? path.resolve(downloadPath) : defaultDir;
+    const sanitizedTitle = sanitizeFilename(title);
+    const showDir = path.join(baseDownloadDir, sanitizedTitle);
+
+    await fs.mkdir(showDir, { recursive: true });
+
+    let submittedCount = 0;
+    let skippedCount = 0;
+
+    // 3. 遍历所有剧集
+    for (const [index, episode] of episodes.entries()) {
+      // 从剧集对象中获取 URL
+      const url = typeof episode === 'string' ? episode : episode.url;
+      if (!url || !url.toLowerCase().includes('m3u8')) {
+        console.warn(`跳过无效的剧集URL (索引: ${index}): ${url}`);
+        continue;
+      }
+
+      const episodeFileName = `第${index + 1}集.mp4`;
+      const outputPath = path.join(showDir, episodeFileName);
+
+      // 4. 检查文件是否已存在，如果存在则跳过
+      try {
+        await fs.access(outputPath);
+        console.log(`文件已存在，跳过: ${outputPath}`);
+        skippedCount++;
+        continue; // 跳到下一个剧集
+      } catch (err) {
+        // 如果错误不是 "文件未找到"，则记录错误并跳过
+        if (err.code !== 'ENOENT') {
+          console.error(`访问文件时出错 ${outputPath}:`, err);
+          continue;
+        }
+      }
+
+      // 5. 启动下载进程（“即发即忘”）
+      const streamlinkProcess = spawn('streamlink', [
+        '-o', outputPath,
+        `hls://${url}`,
+        'best',
+        '--hls-live-restart',
+      ], {
+        shell: true,
+        detached: true, // 在后台运行
+        stdio: 'ignore'  // 忽略输出，避免阻塞
+      });
+
+      streamlinkProcess.unref(); // 允许父进程独立退出
+      submittedCount++;
+    }
+
+    // 6. 立即响应客户端
+    const message = `任务已提交。新增下载: ${submittedCount}个，跳过已存在文件: ${skippedCount}个。\n 保存路径: ${showDir}`;
+    return NextResponse.json({
+      success: true,
+      message: message,
+      path: showDir,
+      submitted: submittedCount,
+      skipped: skippedCount,
+    });
+
+  } catch (error) {
+    console.error('API Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json({ error: `服务器内部错误: ${errorMessage}` }, { status: 500 });
+  }
+}
