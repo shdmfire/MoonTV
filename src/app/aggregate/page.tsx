@@ -5,11 +5,10 @@
 import { LinkIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import os from 'os';
 import { Suspense, useEffect, useState } from 'react';
 
-import {
-  fetchVideoDetail,
-} from '@/lib/fetchVideoDetail.client';
+import { fetchVideoDetail } from '@/lib/fetchVideoDetail.client';
 import { SearchResult } from '@/lib/types';
 
 import PageLayout from '@/components/PageLayout';
@@ -132,10 +131,10 @@ function AggregatePageClient() {
 
   const infoReady = Boolean(
     aggregatedInfo.cover ||
-    aggregatedInfo.desc ||
-    aggregatedInfo.type ||
-    aggregatedInfo.year ||
-    aggregatedInfo.remarks
+      aggregatedInfo.desc ||
+      aggregatedInfo.type ||
+      aggregatedInfo.year ||
+      aggregatedInfo.remarks
   );
 
   const uniqueSources = Array.from(
@@ -145,9 +144,10 @@ function AggregatePageClient() {
   // 详情映射，便于快速获取每个源的集数
   const sourceDetailMap = new Map(results.map((d) => [d.source, d]));
 
-
   // 在组件顶部添加状态
-  const [selectedSource, setSelectedSource] = useState<SearchResult | null>(null);
+  const [selectedSource, setSelectedSource] = useState<SearchResult | null>(
+    null
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadStatus, setDownloadStatus] = useState('');
@@ -170,11 +170,19 @@ function AggregatePageClient() {
       });
 
       // 2. 检查是否成功获取剧集和URL
-      if (!detailData || !detailData.episodes || detailData.episodes.length === 0) {
+      if (
+        !detailData ||
+        !detailData.episodes ||
+        detailData.episodes.length === 0
+      ) {
         throw new Error('未能获取到有效的剧集链接。请检查视频源。');
       }
 
       setDownloadStatus(`正在提交 ${detailData.episodes.length} 个下载任务...`);
+
+      // 根据操作系统选择下载路径
+      const downloadPath =
+        os.platform() === 'win32' ? 'D:\\MyVideos' : '/vol1/1000/Movies';
 
       // 3. 将所有剧集链接发送到后端
       const response = await fetch('/api/download', {
@@ -183,24 +191,27 @@ function AggregatePageClient() {
         body: JSON.stringify({
           episodes: detailData.episodes, // 发送整个剧集数组
           title: aggregatedInfo.title,
-          downloadPath: 'D:\\MyVideos' // 可选的自定义路径
+          downloadPath, // 根据操作系统设置的下载路径
         }),
       });
 
       const data = await response.json();
       if (response.ok) {
         // 使用后端返回的更详细的消息
-        setDownloadStatus(data.message || `✅ ${data.submitted} 个下载任务已成功提交！`);
+        setDownloadStatus(
+          data.message || `✅ ${data.submitted} 个下载任务已成功提交！`
+        );
       } else {
         setDownloadStatus(`❌ 提交下载任务失败: ${data.error || '未知错误'}`);
       }
     } catch (error) {
-      setDownloadStatus(`❌ 请求失败: ${error instanceof Error ? error.message : String(error)}`);
+      setDownloadStatus(
+        `❌ 请求失败: ${error instanceof Error ? error.message : String(error)}`
+      );
     } finally {
       setIsDownloading(false);
     }
   };
-
 
   // --- Click handler to open the dialog ---
   const handleSourceClick = (source: SearchResult) => {
@@ -309,7 +320,9 @@ function AggregatePageClient() {
               <div className='mt-0 sm:mt-8 bg-transparent rounded-xl p-2 sm:p-6'>
                 <div className='flex items-center gap-2 mb-4'>
                   <div className='text-xl font-semibold'>选择播放源</div>
-                  <div className='text-gray-400 ml-2'>共 {uniqueSources.length} 个</div>
+                  <div className='text-gray-400 ml-2'>
+                    共 {uniqueSources.length} 个
+                  </div>
                 </div>
                 <div className='grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fill,_minmax(6rem,_1fr))] sm:gap-4 justify-start'>
                   {uniqueSources.map((src) => {
@@ -322,7 +335,9 @@ function AggregatePageClient() {
                         onClick={() => handleSourceClick(src)}
                         className='relative flex items-center justify-center w-full h-14 bg-gray-500/80 hover:bg-green-500 dark:bg-gray-700/80 dark:hover:bg-green-600 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-green-400'
                       >
-                        <span className='px-1 text-white text-sm font-medium truncate whitespace-nowrap'>{src.source_name}</span>
+                        <span className='px-1 text-white text-sm font-medium truncate whitespace-nowrap'>
+                          {src.source_name}
+                        </span>
                         {epCount > 1 && (
                           <span className='absolute top-[2px] right-1 text-[10px] font-semibold text-green-900 bg-green-300/90 rounded-full px-1 pointer-events-none'>
                             {epCount}集
@@ -334,7 +349,13 @@ function AggregatePageClient() {
                 </div>
                 {/* 下载状态显示 (保持不变) */}
                 {downloadStatus && (
-                  <div className={`mt-4 p-3 rounded-lg text-sm text-center whitespace-pre-wrap ${downloadStatus.includes('❌') ? 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200' : 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200'}`}>
+                  <div
+                    className={`mt-4 p-3 rounded-lg text-sm text-center whitespace-pre-wrap ${
+                      downloadStatus.includes('❌')
+                        ? 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200'
+                        : 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200'
+                    }`}
+                  >
                     {downloadStatus}
                   </div>
                 )}
@@ -348,7 +369,9 @@ function AggregatePageClient() {
       {isDialogOpen && selectedSource && (
         <div className='fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 transition-opacity'>
           <div className='bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm mx-4 transform transition-all'>
-            <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>请选择操作</h3>
+            <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>
+              请选择操作
+            </h3>
             <p className='mt-2 text-sm text-gray-600 dark:text-gray-300'>
               要下载《{selectedSource.title}》还是直接在线播放？
             </p>
@@ -357,7 +380,11 @@ function AggregatePageClient() {
               <button
                 onClick={() => {
                   if (selectedSource) {
-                    const playUrl = `/play?source=${selectedSource.source}&id=${selectedSource.id}&title=${encodeURIComponent(selectedSource.title)}${selectedSource.year ? `&year=${selectedSource.year}` : ''}&from=aggregate`;
+                    const playUrl = `/play?source=${selectedSource.source}&id=${
+                      selectedSource.id
+                    }&title=${encodeURIComponent(selectedSource.title)}${
+                      selectedSource.year ? `&year=${selectedSource.year}` : ''
+                    }&from=aggregate`;
                     router.push(playUrl);
                   }
                   setIsDialogOpen(false);

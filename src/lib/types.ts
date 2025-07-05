@@ -44,3 +44,24 @@ export interface DoubanResult {
   message: string;
   list: DoubanItem[];
 }
+
+export interface DownloaderConfig {
+  path: string;
+  save_dir: string;
+}
+
+export interface Config {
+  cache_time: number;
+  downloader: {
+    windows: DownloaderConfig;
+    linux: DownloaderConfig;
+    darwin: DownloaderConfig;
+  };
+  api_site: {
+    [key: string]: {
+      api: string;
+      name: string;
+      detail?: string;
+    };
+  };
+}

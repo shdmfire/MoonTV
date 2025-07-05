@@ -2,85 +2,99 @@
 /* eslint-disable */
 
 export const config = {
-  "cache_time": 7200,
-  "api_site": {
-    "dyttzy": {
-      "api": "http://caiji.dyttzyapi.com/api.php/provide/vod",
-      "name": "电影天堂资源",
-      "detail": "http://caiji.dyttzyapi.com"
+  cache_time: 7200,
+  downloader: {
+    windows: {
+      path: 'N_m3u8DL-RE',
+      save_dir: 'D:\\MyVideos',
     },
-    "ruyi": {
-      "api": "https://cj.rycjapi.com/api.php/provide/vod",
-      "name": "如意资源"
+    linux: {
+      path: '/usr/local/bin/N_m3u8DL-RE',
+      save_dir: '/vol1/1000/Movies',
     },
-    "heimuer": {
-      "api": "https://json.heimuer.xyz/api.php/provide/vod",
-      "name": "黑木耳",
-      "detail": "https://heimuer.tv"
+    darwin: {
+      path: '/usr/local/bin/N_m3u8DL-RE',
+      save_dir: '/vol1/1000/Movies',
     },
-    "bfzy": {
-      "api": "https://bfzyapi.com/api.php/provide/vod",
-      "name": "暴风资源"
+  },
+  api_site: {
+    dyttzy: {
+      api: 'http://caiji.dyttzyapi.com/api.php/provide/vod',
+      name: '电影天堂资源',
+      detail: 'http://caiji.dyttzyapi.com',
     },
-    "tyyszy": {
-      "api": "https://tyyszy.com/api.php/provide/vod",
-      "name": "天涯资源"
+    ruyi: {
+      api: 'https://cj.rycjapi.com/api.php/provide/vod',
+      name: '如意资源',
     },
-    "ffzy": {
-      "api": "http://ffzy5.tv/api.php/provide/vod",
-      "name": "非凡影视",
-      "detail": "http://ffzy5.tv"
+    heimuer: {
+      api: 'https://json.heimuer.xyz/api.php/provide/vod',
+      name: '黑木耳',
+      detail: 'https://heimuer.tv',
     },
-    "zy360": {
-      "api": "https://360zy.com/api.php/provide/vod",
-      "name": "360资源"
+    bfzy: {
+      api: 'https://bfzyapi.com/api.php/provide/vod',
+      name: '暴风资源',
     },
-    "iqiyi": {
-      "api": "https://www.iqiyizyapi.com/api.php/provide/vod",
-      "name": "iqiyi资源"
+    tyyszy: {
+      api: 'https://tyyszy.com/api.php/provide/vod',
+      name: '天涯资源',
     },
-    "wolong": {
-      "api": "https://wolongzyw.com/api.php/provide/vod",
-      "name": "卧龙资源"
+    ffzy: {
+      api: 'http://ffzy5.tv/api.php/provide/vod',
+      name: '非凡影视',
+      detail: 'http://ffzy5.tv',
     },
-    "jisu": {
-      "api": "https://jszyapi.com/api.php/provide/vod",
-      "name": "极速资源",
-      "detail": "https://jszyapi.com"
+    zy360: {
+      api: 'https://360zy.com/api.php/provide/vod',
+      name: '360资源',
     },
-    "dbzy": {
-      "api": "https://dbzy.tv/api.php/provide/vod",
-      "name": "豆瓣资源"
+    iqiyi: {
+      api: 'https://www.iqiyizyapi.com/api.php/provide/vod',
+      name: 'iqiyi资源',
     },
-    "mozhua": {
-      "api": "https://mozhuazy.com/api.php/provide/vod",
-      "name": "魔爪资源"
+    wolong: {
+      api: 'https://wolongzyw.com/api.php/provide/vod',
+      name: '卧龙资源',
     },
-    "mdzy": {
-      "api": "https://www.mdzyapi.com/api.php/provide/vod",
-      "name": "魔都资源"
+    jisu: {
+      api: 'https://jszyapi.com/api.php/provide/vod',
+      name: '极速资源',
+      detail: 'https://jszyapi.com',
     },
-    "zuid": {
-      "api": "https://api.zuidapi.com/api.php/provide/vod",
-      "name": "最大资源"
+    dbzy: {
+      api: 'https://dbzy.tv/api.php/provide/vod',
+      name: '豆瓣资源',
     },
-    "yinghua": {
-      "api": "https://m3u8.apiyhzy.com/api.php/provide/vod",
-      "name": "樱花资源"
+    mozhua: {
+      api: 'https://mozhuazy.com/api.php/provide/vod',
+      name: '魔爪资源',
     },
-    "wujin": {
-      "api": "https://api.wujinapi.me/api.php/provide/vod",
-      "name": "无尽资源"
+    mdzy: {
+      api: 'https://www.mdzyapi.com/api.php/provide/vod',
+      name: '魔都资源',
     },
-    "wwzy": {
-      "api": "https://wwzy.tv/api.php/provide/vod",
-      "name": "旺旺短剧"
+    zuid: {
+      api: 'https://api.zuidapi.com/api.php/provide/vod',
+      name: '最大资源',
     },
-    "ikun": {
-      "api": "https://ikunzyapi.com/api.php/provide/vod",
-      "name": "iKun资源"
-    }
-  }
+    yinghua: {
+      api: 'https://m3u8.apiyhzy.com/api.php/provide/vod',
+      name: '樱花资源',
+    },
+    wujin: {
+      api: 'https://api.wujinapi.me/api.php/provide/vod',
+      name: '无尽资源',
+    },
+    wwzy: {
+      api: 'https://wwzy.tv/api.php/provide/vod',
+      name: '旺旺短剧',
+    },
+    ikun: {
+      api: 'https://ikunzyapi.com/api.php/provide/vod',
+      name: 'iKun资源',
+    },
+  },
 } as const;
 
 export type RuntimeConfig = typeof config;

@@ -1,5 +1,19 @@
 {
   "cache_time": 7200,
+  "downloader": {
+    "windows": {
+      "path": "N_m3u8DL-RE",
+      "save_dir": "D:\\MyVideos"
+    },
+    "linux": {
+      "path": "/usr/local/bin/N_m3u8DL-RE",
+      "save_dir": "/vol1/1000/Movies"
+    },
+    "darwin": {
+      "path": "/usr/local/bin/N_m3u8DL-RE",
+      "save_dir": "/vol1/1000/Movies"
+    }
+  },
   "api_site": {
     "dyttzy": {
       "api": "http://caiji.dyttzyapi.com/api.php/provide/vod",
