@@ -6,11 +6,11 @@
       "save_dir": "D:\\MyVideos"
     },
     "linux": {
-      "path": "/usr/local/bin/N_m3u8DL-RE",
+      "path": "/app/tools/N_m3u8DL-RE",
       "save_dir": "/vol1/1000/Movies"
     },
     "darwin": {
-      "path": "/usr/local/bin/N_m3u8DL-RE",
+      "path": "/app/tools/N_m3u8DL-RE",
       "save_dir": "/vol1/1000/Movies"
     }
   },
