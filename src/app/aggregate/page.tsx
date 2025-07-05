@@ -5,7 +5,6 @@
 import { LinkIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import os from 'os';
 import { Suspense, useEffect, useState } from 'react';
 
 import { fetchVideoDetail } from '@/lib/fetchVideoDetail.client';
@@ -180,10 +179,6 @@ function AggregatePageClient() {
 
       setDownloadStatus(`正在提交 ${detailData.episodes.length} 个下载任务...`);
 
-      // 根据操作系统选择下载路径
-      const downloadPath =
-        os.platform() === 'win32' ? 'D:\\MyVideos' : '/vol1/1000/Movies';
-
       // 3. 将所有剧集链接发送到后端
       const response = await fetch('/api/download', {
         method: 'POST',
@@ -191,7 +186,6 @@ function AggregatePageClient() {
         body: JSON.stringify({
           episodes: detailData.episodes, // 发送整个剧集数组
           title: aggregatedInfo.title,
-          downloadPath, // 根据操作系统设置的下载路径
         }),
       });
 

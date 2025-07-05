@@ -28,20 +28,44 @@ async function getDownloaderConfig() {
   try {
     // 尝试读取配置文件
     const configPath = path.join(process.cwd(), 'config.json');
-    // 使用动态导入替代 require
-    const configContent = await import(configPath);
-    const downloaderConfig = configContent.downloader || defaultConfig;
+    const configContent = await fs.readFile(configPath, 'utf-8');
+    const config = JSON.parse(configContent);
+    const downloaderConfig = config.downloader || defaultConfig;
 
+    let selectedConfig;
     switch (platform) {
       case 'win32':
-        return downloaderConfig.windows;
+        selectedConfig = downloaderConfig.windows;
+        break;
       case 'linux':
-        return downloaderConfig.linux;
+        selectedConfig = downloaderConfig.linux;
+        // 在Linux上检查下载器是否存在且可执行
+        try {
+          await fs.access(selectedConfig.path, fs.constants.X_OK);
+        } catch (err) {
+          throw new Error(`下载器不存在或没有执行权限: ${selectedConfig.path}`);
+        }
+        break;
       case 'darwin':
-        return downloaderConfig.darwin;
+        selectedConfig = downloaderConfig.darwin;
+        break;
       default:
-        return downloaderConfig.linux;
+        selectedConfig = downloaderConfig.linux;
     }
+
+    // 检查保存目录是否可写
+    try {
+      const testDir = path.join(
+        selectedConfig.save_dir,
+        '.test_write_permission'
+      );
+      await fs.mkdir(testDir, { recursive: true });
+      await fs.rmdir(testDir);
+    } catch (err) {
+      throw new Error(`保存目录无写入权限: ${selectedConfig.save_dir}`);
+    }
+
+    return selectedConfig;
   } catch (error) {
     // 如果配置文件读取失败，使用默认配置
     const isDev = process.env.NODE_ENV !== 'production';
@@ -50,16 +74,40 @@ async function getDownloaderConfig() {
     }
     const downloaderConfig = defaultConfig;
 
+    let selectedConfig;
     switch (platform) {
       case 'win32':
-        return downloaderConfig.windows;
+        selectedConfig = downloaderConfig.windows;
+        break;
       case 'linux':
-        return downloaderConfig.linux;
+        selectedConfig = downloaderConfig.linux;
+        // 在Linux上检查下载器是否存在且可执行
+        try {
+          await fs.access(selectedConfig.path, fs.constants.X_OK);
+        } catch (err) {
+          throw new Error(`下载器不存在或没有执行权限: ${selectedConfig.path}`);
+        }
+        break;
       case 'darwin':
-        return downloaderConfig.darwin;
+        selectedConfig = downloaderConfig.darwin;
+        break;
       default:
-        return downloaderConfig.linux;
+        selectedConfig = downloaderConfig.linux;
     }
+
+    // 检查保存目录是否可写
+    try {
+      const testDir = path.join(
+        selectedConfig.save_dir,
+        '.test_write_permission'
+      );
+      await fs.mkdir(testDir, { recursive: true });
+      await fs.rmdir(testDir);
+    } catch (err) {
+      throw new Error(`保存目录无写入权限: ${selectedConfig.save_dir}`);
+    }
+
+    return selectedConfig;
   }
 }
 
@@ -92,11 +140,11 @@ export async function POST(request: Request) {
     // 2. 目录和工具路径设置
     const config = await getDownloaderConfig();
     const defaultDir = path.resolve(process.cwd(), 'downloads');
-    // 优先使用请求中的下载路径，其次使用配置文件中的路径，最后使用默认路径
-    const baseDownloadDir = downloadPath
-      ? path.resolve(downloadPath)
-      : config.save_dir
+    // 优先使用配置文件中的路径，其次使用请求中的路径，最后使用默认路径
+    const baseDownloadDir = config.save_dir
       ? path.resolve(config.save_dir)
+      : downloadPath
+      ? path.resolve(downloadPath)
       : defaultDir;
     const sanitizedTitle = sanitizeFilename(title);
     const showDir = path.join(baseDownloadDir, sanitizedTitle);
@@ -159,7 +207,12 @@ export async function POST(request: Request) {
             console.log(`[Exec] ${command} ${args.join(' ')}`);
           }
 
-          const downloadProcess = spawn(command, args, { shell: false });
+          // 在 Windows 上需要使用 shell
+          const useShell = os.platform() === 'win32';
+          const downloadProcess = spawn(command, args, {
+            shell: useShell,
+            windowsVerbatimArguments: useShell,
+          });
 
           // 捕获进程启动错误 (例如命令或文件不存在)
           downloadProcess.on('error', (err) => {
@@ -172,16 +225,22 @@ export async function POST(request: Request) {
 
           let processOutput = '';
           if (downloadProcess.stdout) {
-            downloadProcess.stdout.on(
-              'data',
-              (data) => (processOutput += data.toString())
-            );
+            downloadProcess.stdout.on('data', (data) => {
+              const output = data.toString();
+              processOutput += output;
+              if (isDev) {
+                console.log(`[stdout] ${output}`);
+              }
+            });
           }
           if (downloadProcess.stderr) {
-            downloadProcess.stderr.on(
-              'data',
-              (data) => (processOutput += data.toString())
-            );
+            downloadProcess.stderr.on('data', (data) => {
+              const output = data.toString();
+              processOutput += output;
+              if (isDev) {
+                console.error(`[stderr] ${output}`);
+              }
+            });
           }
 
           // 监听进程退出事件
